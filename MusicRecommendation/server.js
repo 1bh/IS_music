@@ -1,4 +1,7 @@
 //Just a quick hello world for now
+/*
+ * sanity check git commit <<
+*/
 require('express')()
 	.get('/', function(request, response) {
 		response.type('text/plain');
