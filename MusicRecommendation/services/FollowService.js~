@@ -1,13 +1,33 @@
-var FollowDataSource = [];
+//var FollowDataSource = [];
+var FollowDataProvider = (function() {
+	var Follows = [];
+	
+	return {
+		GetByTo: function(to) {
+			return Follows.filter(function(n) {
+				return n.to == to;
+			});	
+		},
+		GetByFrom: function(from) {
+			return Follows.filter(function(n) {
+				return n.from == from;
+			});
+		},
+		Insert: function(follow) {
+			Follows.push(follow);
+		}
+	}
+})();
+
 var q = require('q');
 
 exports.Create = function(follow) {
 	var deferred = q.defer();
 	try {
-		if (FollowDataSource.length == 10) { 
+		if (FollowDataProvider.GetByTo('ivan').length == 2) { 
 			throw err; 
 		}	
-		FollowDataSource.push(follow);
+		FollowDataProvider.Insert(follow);
 		deferred.resolve("good");
 	} catch (err) {
 		deferred.reject("bad");
@@ -27,5 +47,5 @@ exports.Create = function(follow) {
 };
 
 exports.Get = function() {
-	return FollowDataSource;
+	return FollowDataProvider.GetByTo('ivan');
 };
