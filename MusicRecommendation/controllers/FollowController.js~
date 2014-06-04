@@ -12,16 +12,12 @@ module.exports.set = function(app) {
 		var from = request.body.from;
 		var to = request.body.to;
 		
-		var follow = {
-			from : from,
-			to : to
-		};
+		
 		
 		followService.Create(
-			follow,
+			{ from: from, to: to},
 			function success(d) { response.send("success"); },
-			function failure(d) { response.send("failure"); }
-		);
+			function failure(d) { response.send("failure"); });
     	
     	
 	});
