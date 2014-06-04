@@ -2,6 +2,7 @@
 
 var express = require('express');
 var bodyparser = require('body-parser');
+var q = require('q');
 var app = express();
 
 app.use(bodyparser());
@@ -13,7 +14,11 @@ app.use(function(request, response, next) {
 
 var controllers = require('./controllers/');
 
-controllers.set(app);
+var d = q.defer();
+console.log(d);
+
+
+controllers.set(app, q);
 
 app.get('/', function(request, response) {
 	response.type('text/html');

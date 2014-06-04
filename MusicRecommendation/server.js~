@@ -2,16 +2,21 @@
 
 var express = require('express');
 var bodyparser = require('body-parser');
+var q = require('q');
 var app = express();
 
 app.use(bodyparser());
 
 app.use(function(request, response, next) {
-	console.log("Request made: (Testing this middleware stuff :])");
+	console.log("Request made: (Testing this middleware stuff :]");
 	next();
 });
 
 var controllers = require('./controllers/');
+
+var d = q.defer();
+console.log(d);
+
 
 controllers.set(app);
 
