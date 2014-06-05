@@ -3,10 +3,23 @@ var q = require('q');
 var SongDataProvider = (function() {
 	
 	var Songs = [];
+	var GenreBucketSongs = {};
+	
+	function updateTagBuckets(song) {
+		var tags = song.Tags;
+		
+		tags.forEach(function(element,index) { 
+			if (GenreBucketSongs[element] == undefined) {
+				GenreBucketSongs[element] = [];
+			}
+			GenreBucketSongs[element].push(song.Song);
+		});
+	}
 	
 	return {
 		Insert: function(song) {
 			Songs.push(song);
+			updateTagBuckets(song);
 		},
 		Get: function() {
 			return Songs;

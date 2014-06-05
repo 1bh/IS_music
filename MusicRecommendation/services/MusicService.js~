@@ -3,25 +3,38 @@ var q = require('q');
 var SongDataProvider = (function() {
 	
 	var Songs = [];
+	var GenreBucketSongs = {};
+	
+	function updateTagBuckets(song) {
+		var tags = song.Tags;
+		
+		tags.forEach(function(element,index) { 
+			if (GenreBucketSongs[element] == undefined) {
+				GenreBucketSongs[element] = [];
+			}
+			GenreBucketSongs[element].push(song.Song);
+		});
+	}
 	
 	return {
 		Insert: function(song) {
 			Songs.push(song);
+			updateTagBuckets(song);
 		},
 		Get: function() {
+			console.log(Songs);
 			return Songs;
 		}
 	}
 	
 })();
 
-
-exports.Create = function(insert) {
+exports.Read = function() {
 	var deferred = q.defer();
 	
 	try {
-		ListenDataProvider.Insert(listen);
-		deferred.resolve(listen);
+		var songs = SongDataProvider.Get();
+		deferred.resolve(songs);
 	} catch (err) {
 		deferred.reject("bad");
 	}
@@ -29,6 +42,18 @@ exports.Create = function(insert) {
 	return deferred.promise;
 }
 
-exports.Get = function() {
+exports.Add = function(song) {
+	var deferred = q.defer();
 	
+	try {
+		SongDataProvider.Insert(song);
+		deferred.resolve(song);
+	} catch (err) {
+		deferred.reject("bad");
+	}
+	
+	return deferred.promise;
 };
+
+
+
