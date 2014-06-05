@@ -1,5 +1,20 @@
-var ListenDataProvider = require('ListenDataProvider');
 var q = require('q');
+
+var SongDataProvider = (function() {
+	
+	var Songs = [];
+	
+	return {
+		Insert: function(song) {
+			Songs.push(song);
+		},
+		Get: function() {
+			return Songs;
+		}
+	}
+	
+})();
+
 
 exports.Create = function(insert) {
 	var deferred = q.defer();

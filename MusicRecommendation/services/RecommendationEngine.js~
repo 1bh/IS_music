@@ -3,10 +3,11 @@
 //People who the user follow in the first degree
 //Possibly nth degree
 //Maximize for discovery of new songs
+var FollowService = require('../services/FollowService');
 
-function ByFollowee() {
-	
-}
+var ListenService = require('../services/ListenService');
+
+function UsersListenedToMusic
 
 exports.MakeRecommendationEngine = function() {
 	return new RecommendationEngine();

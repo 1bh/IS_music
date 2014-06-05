@@ -1,4 +1,5 @@
 var recommendationEngine = require('../services/RecommendationEngine');
+
 var FollowDataProvider = require('../provider/FollowDataProvider');
 
 var q = require('q');
@@ -8,8 +9,8 @@ exports.Get = function(amount) {
 	
 	try {
 		//var recommendations = recommendationEngine.Make(amount);
-		var followees = FollowDataProvider.Get();
-		deferred.resolve(followees);
+		var recommendations = FollowDataProvider.Get();
+		deferred.resolve(recommendations);
 	} catch (err) {
 		deferred.reject();
 	}

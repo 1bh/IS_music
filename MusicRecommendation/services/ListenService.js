@@ -1,15 +1,4 @@
-var ListenDataProvider = (function() {
-	
-	var Listens = [];
-	
-	return {
-		Insert: function(listen) {
-			Listens.push(listen);
-		}
-	}
-	
-})();
-
+var ListenDataProvider = require('../provider/ListenDataProvider');
 var q = require('q');
 
 exports.Create = function(insert) {
@@ -24,3 +13,7 @@ exports.Create = function(insert) {
 	
 	return deferred.promise;
 }
+
+exports.Get = function() {
+	
+};
