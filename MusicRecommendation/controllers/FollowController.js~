@@ -17,11 +17,11 @@ module.exports.set = function(app) {
 			to : to
 		};
 		
-		followService.Create(
-			follow,
-			function success(d) { response.send("success"); },
-			function failure(d) { response.send("failure"); }
-		);
+		followService.Create(follow)
+			.then(
+				function success(d) { response.send("success"); },
+				function failure(d) { response.send("failure"); }
+			);
     	
     	
 	});

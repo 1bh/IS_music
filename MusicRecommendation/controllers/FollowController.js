@@ -1,7 +1,7 @@
 
 var followService = require('../services/FollowService');
 
-module.exports.set = function(app) {
+module.exports.set = function(app, q) {
    
     app.get('/follow', function(request, response) {
 		response.send(followService.Get());
