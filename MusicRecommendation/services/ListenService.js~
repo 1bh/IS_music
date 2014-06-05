@@ -5,7 +5,7 @@ var ListenDataProvider = (function() {
 	return {
 		Insert: function(listen) {
 			Listens.push(listen);
-		}
+		};
 	}
 	
 })();
