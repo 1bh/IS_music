@@ -1,12 +1,12 @@
-var ListenDataProvider = require('ListenDataProvider');
+var ListenDataProvider = require('../provider/ListenDataProvider');
 var q = require('q');
 
 exports.Create = function(insert) {
 	var deferred = q.defer();
 	
 	try {
-		ListenDataProvider.Insert(listen);
-		deferred.resolve(listen);
+		var l = ListenDataProvider.Insert(listen);
+		deferred.resolve(l);
 	} catch (err) {
 		deferred.reject("bad");
 	}
@@ -14,6 +14,6 @@ exports.Create = function(insert) {
 	return deferred.promise;
 }
 
-exports.Get = function() {
+exports.Get = function(user) {
 	
 };

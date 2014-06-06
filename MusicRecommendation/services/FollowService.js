@@ -1,25 +1,44 @@
-//var FollowDataSource = [];
 var FollowDataProvider = require('../provider/FollowDataProvider');
+
 var q = require('q');
+
 
 exports.Create = function(follow) {
 	var deferred = q.defer();
+	
 	try {
-		FollowDataProvider.Insert(follow);
-		deferred.resolve("good");
+		var d = FollowDataProvider.Insert(follow);
+		deferred.resolve(d);
 	} catch (err) {
-		deferred.reject("bad");
+		deferred.reject(err);
 	}
+	
 	return deferred.promise;
 };
 
-exports.GetFollowees = function(from) {
+exports.Get = function() {
 	try {
 		var deferred = q.defer();
+		
+		var followees = FollowDataProvider.Get();
+		
+		deferred.resolve(followees);
+	} catch (err) {
+		deferred.reject();
+	}
+	
+	return deferred.promise();
+}
+
+exports.GetFollowees = function(user) {
+	try {
+		var deferred = q.defer();
+		
 		var followees = FollowDataProvider.Get()
 			.filter(function(f) {
-				return f.from == from;
+				return f.from == user;
 			});
+			
 		deferred.resolve(followees);
 	} catch (err) {
 		deferred.reject();

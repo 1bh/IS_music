@@ -5,7 +5,7 @@ var SongDataProvider = (function() {
 	var Songs = [];
 	var GenreBucketSongs = {};
 	
-	function updateTagBuckets(song) {
+	function indexSongByGenre(song) {
 		var tags = song.Tags;
 		
 		tags.forEach(function(element,index) { 
@@ -19,7 +19,7 @@ var SongDataProvider = (function() {
 	return {
 		Insert: function(song) {
 			Songs.push(song);
-			updateTagBuckets(song);
+			indexSongByGenre(song);
 		},
 		Get: function() {
 			return Songs;
@@ -27,6 +27,7 @@ var SongDataProvider = (function() {
 	}
 	
 })();
+
 
 exports.Read = function() {
 	var deferred = q.defer();
@@ -41,6 +42,7 @@ exports.Read = function() {
 	return deferred.promise;
 }
 
+
 exports.Add = function(song) {
 	var deferred = q.defer();
 	
@@ -53,6 +55,20 @@ exports.Add = function(song) {
 	
 	return deferred.promise;
 };
+
+//Returns all songs that match at least one of the tags in TagList
+exports.GetByTagsOR = function(TagList) {
+
+}
+
+//Returns all songs that match all of the tags in TagList
+exports.GetByTagsAND = function(TagList) {
+
+}
+
+
+
+
 
 
 

@@ -9,7 +9,7 @@ exports.Get = function(amount) {
 	
 	try {
 		var recommendations = recommendationEngine.Make(amount);
-		//var followees = FollowDataProvider.Get();
+		//var recommendations = FollowDataProvider.Get();
 		deferred.resolve(recommendations);
 	} catch (err) {
 		deferred.reject();

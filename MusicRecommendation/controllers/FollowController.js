@@ -15,8 +15,8 @@ module.exports.set = function(app, q) {
 		
 		followService.Create(follow)
 			.then(
-				function success(d) { response.send("success"); },
-				function failure(d) { response.send("failure"); }
+				function success(d) { response.send(d); },
+				function failure(d) { response.send("Failure"); }
 			);
     	
     	

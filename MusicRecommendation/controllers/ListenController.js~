@@ -1,3 +1,5 @@
+var listenService = require('../services/ListenService');
+
 module.exports.set = function(app, q) {
 
 	app.post('/follow', function(request, response) {

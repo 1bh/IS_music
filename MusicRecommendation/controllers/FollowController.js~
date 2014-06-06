@@ -2,11 +2,7 @@
 var followService = require('../services/FollowService');
 
 module.exports.set = function(app, q) {
-   
-    app.get('/follow', function(request, response) {
-		response.send(followService.Get());
-    });
-        
+    
 	app.post('/follow', function(request, response) {
 		
 		var from = request.body.from;
@@ -19,8 +15,8 @@ module.exports.set = function(app, q) {
 		
 		followService.Create(follow)
 			.then(
-				function success(d) { response.send("success"); },
-				function failure(d) { response.send("failure"); }
+				function success(d) { response.send(d); },
+				function failure(d) { response.send("Failure"); }
 			);
     	
     	

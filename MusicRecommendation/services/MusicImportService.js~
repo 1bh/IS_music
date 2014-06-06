@@ -6,7 +6,7 @@ var MusicService = require('../services/MusicService');
 exports.importJSONMapFile = function(FILEPATH) {
 	var defer = q.defer();
 	
-	fs.readFile(MUSICPATH, 'utf8', function (err, data) {
+	fs.readFile(FILEPATH, 'utf8', function (err, data) {
 	  if (err) {
 	  	defer.reject();
 	  } else {

@@ -14,7 +14,7 @@ module.exports.set = function(app, q) {
 		
 		listenService.Create(listen)
 			.then(
-				function success(d) { response.send("success"); },
+				function success(d) { response.send(d); },
 				function failure(d) { response.send("failure"); }
 			);
 	});
