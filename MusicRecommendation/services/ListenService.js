@@ -17,3 +17,7 @@ exports.Create = function(insert) {
 exports.Get = function(user) {
 	
 };
+
+exports.GetByUser = function(user) {
+	
+};
