@@ -6,9 +6,11 @@ exports.Insert = function(listen) {
 	listen.id = id;
 	
 	Listens.push(listen);
+	console.log(Listens);
+	return listen;
 }
 
-exports.Get = function() {
+exports.Query = function() {
 	return Listens;
 }
 

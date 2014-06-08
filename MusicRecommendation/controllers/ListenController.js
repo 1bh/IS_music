@@ -2,7 +2,7 @@ var listenService = require('../services/ListenService');
 
 module.exports.set = function(app, q) {
 
-	app.post('/follow', function(request, response) {
+	app.post('/listen', function(request, response) {
 		
 		var user = request.body.user;
 		var music = request.body.music;
@@ -14,7 +14,7 @@ module.exports.set = function(app, q) {
 		
 		listenService.Create(listen)
 			.then(
-				function success(d) { response.send(d); },
+				function success(d) { response.json(d); },
 				function failure(d) { response.send("failure"); }
 			);
 	});

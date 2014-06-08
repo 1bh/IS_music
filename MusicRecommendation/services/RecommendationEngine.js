@@ -12,7 +12,7 @@ var MusicService = require('../services/MusicService');
 //If I want to do soemthing allong the lines of what I had originally described, a lot of caching would probably be the more powerful tool.
 //Probably a middle layer that controls caching for this data, so data access does not have to keep being made ie. controls to handle how often we recharge cache
 
-//work with song maps
+//work with song maps Every promise of song lists should return a scored map of occurance
 
 //maybeo n construction of recommendationengine, make a cache based on the user
 // just so we can pipe it in a chain. im on the fence about using success handlers this way, I normally liek to only return promises inside "then", but i am trying something new
@@ -25,7 +25,7 @@ exports.SongsTheirFolloweesListenTo = function(username) {
 		return UserPromise.then(
 			function(user) {
 				return user.follows; 				
-			}
+			});
 	};
 	
 	var getFolloweesUserObjects = function(usernameList) {
@@ -64,51 +64,51 @@ exports.SongsTheirFolloweesListenTo = function(username) {
 			.then(getUsersMusic);
 	
 	return deferred.promise;
-}
+};
 
-/*
-//Get all songs that their followees listen to scored
-exports.SongsTheirFolloweesListenTo2 = function(user) {
+exports.SongsWithTagsTheyveListenedTo = function(user) {
+	var deferred = q.defer();
 	
-	var defer = q.defer();
-	
-	FollowService.GetFollowees(user)
-		.then(
-			function success(followees) {
-			
-				var followeesMusicPromises = followees.map(function(f) {
-					return ListenService.GetByUser(f.to);
-				});
-			
-				return q.all(followeesMusicPromises);	
-			}			
-		)
-		.then(
-			function success(followeesMusic) {
-				var MusicOccurances = {};
-			
-				var followeesMusicCount = followeesMusic.length;
+	var UserPromise = UserFactory.Make(username);
+
+	var usersSongsListenedTo = UserPromise.then(
+		function(user) {
+			return user.listenedTo;
+		});
+		
+	var getTagOccuranceMap = function(songnames) {
+		return MusicService.GetBySongNames(songnames).then(
+			function(songs) {
+				var tagOccuranceMap = {};
 				
-				for (var x=0;x<followeesMusicCount;x++) {
+				var songslen = songs.length;
+				
+				for (var i=0; i<songslen; i++) {
+					var songtags = songs[i].Tags;
 					
-					var musicListenedTo = followeesMusic[x].valueOf();
+					var tagsLen = songtags.length;
 					
-					for (var y=0; y<musicListenedTo.length; y++) {
-						var occurance = MusicOccurances[musicListenedTo[y]];
-						if (occurance == undefined) {
-							occurance = 0;
-						} else {
-							occurance++;
+					for(var n=0; n<tagsLen; n++) {
+						var songtag = songtags[n];
+						var songTagMapping = tagOccuranceMap[songtag];
+						if (songTagMapping == undefined) {
+							songTagMapping = 0;
 						} 
+						songTagMapping++;
 					}
 				}
-				defer.resolve(MusicOccurances);
-			}
-		)
+				
+				return tagOccuranceMap;
+			});
+	};
+	
+	var getSongMapBasedOnTags = function(tagOccurnaceMap) {
+		var songMap = {};
 		
-	return defer.promise;
-}
-*/
+	}
+};
+
+
 exports.SongsSimilarilyTagged = function(user) {
 	
 	ListenService.Get(user)

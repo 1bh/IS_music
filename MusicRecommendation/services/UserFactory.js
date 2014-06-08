@@ -2,7 +2,7 @@
 //It will aggregate a bunch of the users information to make it easier to access.
 //This object could also be probably timestamped and cached/stored to be used in subsequent recommendation requests
 //Where staleness is tolerable
-
+//RecommendableUser
 var q = require('q');
 
 var FollowService = require('../services/FollowService');
@@ -37,3 +37,11 @@ exports.Make = function(username) {
 		
 	return deferred.promise;
 }
+
+//MORE LIKE A USER SONG PROFILER BUSINESS OBJECT
+//ACCESS TO: 
+//USER
+//FOLLOWS
+//LISTENEDTO
+//TAGFREQUENCYMAP
+//
