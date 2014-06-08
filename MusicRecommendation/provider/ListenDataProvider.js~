@@ -6,7 +6,6 @@ exports.Insert = function(listen) {
 	listen.id = id;
 	
 	Listens.push(listen);
-	
 	return listen;
 }
 

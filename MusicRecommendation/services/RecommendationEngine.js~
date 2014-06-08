@@ -16,53 +16,74 @@ var MusicService = require('../services/MusicService');
 
 //maybeo n construction of recommendationengine, make a cache based on the user
 // just so we can pipe it in a chain. im on the fence about using success handlers this way, I normally liek to only return promises inside "then", but i am trying something new
-exports.SongsTheirFolloweesListenTo = function(username) {
+
+exports.Get = function(username) {
 	var deferred = q.defer();
-		
-	var UserPromise = UserFactory.Make(username);	
-		
-	var getUserFolloweeList = function(username) {
-		return UserPromise.then(
-			function(user) {
-				return user.follows; 				
-			}
-	};
 	
-	var getFolloweesUserObjects = function(usernameList) {
-		var userPromises = usernameList.map(function(name) {
+	SongsTheirFolloweesListenTo(username)
+		.then(function(music) { 
+			var recommendations = [];
+			
+			for (var key in music) {
+				recommendations.push(key);
+			}
+				
+			deferred.resolve(recommendations); 
+		});
+		
+	return deferred.promise;
+}
+
+function SongsTheirFolloweesListenTo(username) {
+	var deferred = q.defer();
+	
+	GetUser(username)
+		.then(GetUsersFollowees)
+		.then(GetFolloweesMusic)
+		.then(function(fm) { deferred.resolve(fm); });
+		
+	function GetUser(name) { 
+		return UserFactory.Make(name);	
+	}
+		
+	function GetUsersFollowees(user) {
+		var followsNameList = user.follows;
+		
+		var userPromises = followsNameList.map(function(name) {
 			return UserFactory.Make(name);
 		});
-		return q.all(userPromises).then(
-			function(users) {
-				return users;
-			}
-		);
+		
+		return q.all(userPromises);
 	}
 	
-	var getUsersMusic = function(users) {
+	function GetFolloweesMusic(users) {
+		var deferred = q.defer();
 		var songMap = {};
-		var followeeLen = users.length;
 		
+		var followeeLen = users.length;
+	
 		for (var i=0; i<followeeLen; i++) { 
 			var user = users[i];
-			var listens = user.listenedTo;
 			
+			var listens = user.listenedTo;		
 			var listensLen = listens.length;
+			
 			for (var n=0; n<listensLen; n++) {
+
 				var songMapping = songMap[listens[n]];
-				if (songMapping == undefined) {
-					songMapping = 0;
+				if (songMapping != undefined) {
+					songMapping++;
+				} else {
+					songMap[listens[n]] = 1;
 				}
-				songMapping++;
 			}
 		}
+
 		deferred.resolve(songMap);
+		
+		return deferred.promise;
 	}
-	
-	getUserFolloweeList
-		.then(getFolloweesUserObjects)
-			.then(getUsersMusic);
-	
+
 	return deferred.promise;
 };
 

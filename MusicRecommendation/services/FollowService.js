@@ -27,23 +27,23 @@ exports.Get = function() {
 		deferred.reject();
 	}
 	
-	return deferred.promise();
+	return deferred.promise;
 }
 
 exports.GetFollowees = function(user) {
-	try {
-		var deferred = q.defer();
+
+	var deferred = q.defer();
+	
+	var followees = FollowDataProvider.Get()
+		.filter(function(f) {
+			return f.from == user;
+		});
 		
-		var followees = FollowDataProvider.Get()
-			.filter(function(f) {
-				return f.from == user;
-			});
-			
-		deferred.resolve(followees);
-	} catch (err) {
-		deferred.reject();
-	}
-	return deferred.promise();
+	deferred.resolve(followees);
+
+	//deferred.reject();
+
+	return deferred.promise;
 }
 
 

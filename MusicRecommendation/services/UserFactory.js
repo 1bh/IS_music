@@ -14,27 +14,25 @@ var MusicService = require('../services/MusicService');
 //To support different queries, maybe on the relationships themselves ie. (Recent Follows, or Listened to in this time frame)
 
 exports.Make = function(username) {
+
 	var deferred = q.defer();
 	
-	//For now there is no actual user, but we do have soem names, and we do have information for a user such as follows and listens
-	
-	var followsPromise = 
-		FollowService.GetFollowees(user);
-	
-	var listensPromise = 
-		ListenService.GetByUser(user);
+	var followsPromise = FollowService.GetFollowees(username);
+		
+	var listensPromise = ListenService.GetByUser(username);
 	
 	q.all([followsPromise, listensPromise]).then(	
-			function success(follows, listens) {
-				return { 
-					user: username,
-					follows: Follows,
-					listenedTo: Listens
-				};
-			
-			}
-	);
+		function success(d) {
+
+			deferred.resolve({ 
+				user: username,
+				listenedTo: d[1].map(function(l) { return l.music; }),
+				follows: d[0].map(function(f) { return f.to; })
+			});
 		
+		}
+	);
+	
 	return deferred.promise;
 }
 

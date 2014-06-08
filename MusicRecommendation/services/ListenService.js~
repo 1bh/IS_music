@@ -6,7 +6,7 @@ exports.Create = function(listen) {
 	
 	try {
 		var l = ListenDataProvider.Insert(listen);
-		console.log(l);
+		
 		deferred.resolve(l);
 	} catch (err) {
 		deferred.reject("bad");
@@ -15,3 +15,19 @@ exports.Create = function(listen) {
 	return deferred.promise;
 }
 
+exports.GetByUser = function(username) {
+	var deferred = q.defer();
+	
+	try {
+		var listens = ListenDataProvider.Get();
+		listens = listens.filter(function(l) {
+			return l.user == username;
+		});
+		console.log(listens);
+		deferred.resolve(listens);
+	} catch (err) {
+		deferred.reject();
+	}
+	
+	return deferred.promise;
+}

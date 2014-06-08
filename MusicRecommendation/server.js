@@ -25,9 +25,11 @@ var app = express();
 app.use(bodyparser());
 
 app.use(function(request, response, next) {
+/*
 	console.log("Request made: (Testing this middleware stuff :]");
 	console.log("Is there any nice model binding/ model" + 
 		"checking libraries out there. maybe ones that use jsonschema or something");
+*/
 	next();
 });
 
