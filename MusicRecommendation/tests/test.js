@@ -7,7 +7,6 @@ var fs = require('fs');
 
 //File paths
 var STATICJSONDIR = '../../../initialgist/gist5042053a95b8bc5e0cb9-2780cd52ab0a6b5122c6350a92254729011b20ce';
-
 var LISTENJSON = '/listen.json';
 var FOLLOWJSON = '/follows.json';
 

@@ -53,6 +53,19 @@ function formatListenJSONForAPI(object) {
 	return deferred.promise;
 }
 
+function doPost(resourceName, model) {
+	var deferred = q.defer();
+			
+	request('http://127.0.0.1:9001')
+		.post('/' + resourceName)
+		.send(model)
+		.end(function(err, res) {
+		deferred.resolve();
+	});
+
+	return deferred.promise;
+}
+
 describe('PostToFollowAPI', function() {
 	it("should see all responses succeed", function(done) {
 

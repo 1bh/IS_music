@@ -2,5 +2,35 @@ var q = require('q');
 
 var FollowService = require('../services/FollowService');
 var ListenService = require('../services/ListenService');
+var MusicService = require('../services/MusicService');
 
+exports.Get = function(username) {
 
+	var deferred = q.defer();
+	
+	var followsPromise = FollowService.GetFollowees(username);
+		
+	var listensPromise = ListenService.GetByUser(username);
+	
+	q.all([followsPromise, listensPromise]).then(	
+		function success(d) {
+
+			deferred.resolve({ 
+				user: username,
+				listenedTo: d[1].map(function(l) { return l.music; }),
+				follows: d[0].map(function(f) { return f.to; })
+			});
+		
+		}
+	);
+	
+	return deferred.promise;
+}
+
+//MORE LIKE A USER SONG PROFILER BUSINESS OBJECT
+//ACCESS TO: 
+//USER
+//FOLLOWS
+//LISTENEDTO
+//TAGFREQUENCYMAP
+//

@@ -23,6 +23,11 @@ var SongDataProvider = (function() {
 		},
 		Get: function() {
 			return Songs;
+		},
+		GetByTag: function(tag) {
+			return Songs.filter(function(s) {
+				return s.Tags.indexOf(tag) != -1;
+			});
 		}
 	}
 	
@@ -61,10 +66,12 @@ exports.GetBySongName = function(name) {
 	
 	try {
 		var songs = SongDataProvider.Get();
-		songs = songs.filter(function(s) {
+		var song = songs.filter(function(s) {
 			return s.Song == name;
 		});
-		deferred.resolve(songs);
+		if (song[0] == undefined) throw err;
+		
+		deferred.resolve(song);
 	} catch ( err ) {
 		deferred.reject("Problem fetching songs by name");
 	}
@@ -89,8 +96,27 @@ exports.GetBySongNames = function(namelist) {
 }
 
 //Returns all songs that match at least one of the tags in TagList
-exports.GetByTagsOR = function(TagList) {
+exports.GetUniqueByTags = function(TagList) {
 
+	var deferred = q.defer();
+
+	var songList = [];
+	console.log(TagList);
+	
+	for (var i=0; i<TagList.length; i++) {
+		var songs = SongDataProvider.GetByTag(TagList[i]);
+		
+		for (var n=0; n<songs.length; n++) {
+			if (songList.filter(function(s) { return s.Song == songs[n].Song }).length = 0) {
+				songList.push(songs[n]);
+			}
+		}
+	}
+	
+	
+	deferred.resolve(songList);
+	
+	return deferred.promise;
 }
 
 //Returns all songs that match all of the tags in TagList

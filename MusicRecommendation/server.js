@@ -1,9 +1,11 @@
-//General Dependencies
+
+var express = require('express');
+var bodyparser = require('body-parser');
 var q = require('q');
+var MusicImportService = require('./services/MusicImportService');
 
 
 //Initial Music data loading
-var MusicImportService = require('./services/MusicImportService');
 
 var MUSICPATH = '../initialgist/gist5042053a95b8bc5e0cb9-2780cd52ab0a6b5122c6350a92254729011b20ce/music.json';
 
@@ -16,9 +18,6 @@ MusicImportService.importJSONMapFile(MUSICPATH).then(
 
 //Express based HTTP server
 //Main middleware pipeline
-
-var express = require('express');
-var bodyparser = require('body-parser');
 
 var app = express();
 
