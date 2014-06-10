@@ -1,30 +1,94 @@
-//Make recommendations based on:
-//What music they have listened to before
-//People who the user follow in the first degree
-//Possibly nth degree
-//Maximize for discovery of new songs
 var q = require('q');
 
-var UserFactory = require('../services/UserFactory');
-
+var UserService = require('../services/UserService');
 var MusicService = require('../services/MusicService');
 
-//If I want to do soemthing allong the lines of what I had originally described, a lot of caching would probably be the more powerful tool.
-//Probably a middle layer that controls caching for this data, so data access does not have to keep being made ie. controls to handle how often we recharge cache
+function Engine() {
+/*
+	var 
+	return */
+};
 
-//work with song maps Every promise of song lists should return a scored map of occurance
 
-//maybeo n construction of recommendationengine, make a cache based on the user
-// just so we can pipe it in a chain. im on the fence about using success handlers this way, I normally liek to only return promises inside "then", but i am trying something new
+exports.MakeEngine = function(username) {
+
+};
+
+exports.Get2 = function(username) {
+	var deferred = q.defer();
+	
+	q.all(
+		[
+			SongsWithTagsTheyveListenedTo(username),
+			SongsTheirFolloweesListenTo(username)
+		]
+	).then(function success(songScoreSheets) {
+		console.log(songScoreSheets);
+
+		var masterScoreSheet = {};
+		
+		var sheetsLength = songScoreSheets.length;
+		
+		for (var i=0; i<sheetsLength; i++) {
+		
+			var scoreSheet = songScoreSheets[i];
+
+			for (var key in scoreSheet) {
+
+				if (masterScoreSheet[key] == undefined) {
+					masterScoreSheet[key] = scoreSheet[key];
+				} else {
+					masterScoreSheet[key] = masterScoreSheet[key] + scoreSheet[key];
+				}
+			}
+		}
+
+		var finalScoreBuckets = {};
+		var highestScore = 0;
+		for (var key in masterScoreSheet) {
+			var songScore = masterScoreSheet[key];
+			if (songScore > highestScore) {
+				highestScore = songScore;
+			}
+			if (finalScoreBuckets[songScore] == undefined) {
+				finalScoreBuckets[songScore] = [key];
+			} else {
+				finalScoreBuckets[songScore].push(key);
+			}
+		}
+
+		var recommendations = [];
+		var n = highestScore;
+
+		while (recommendations.length != 5 && n > 0) {
+			
+			var songs = finalScoreBuckets[n];
+			console.log("songs: ", songs);
+			if (songs.length > 0) {
+				var recommendationsRemaining = 5 - recommendations.length;
+				var r = songs.slice(0, recommendationsRemaining);
+				recommendations = recommendations.concat(r);
+			}
+			n = n - 1;
+		}
+		deferred.resolve(recommendations);
+
+		
+	});
+
+	return deferred.promise;
+}
 
 exports.Get = function(username) {
 	var deferred = q.defer();
-	
+
+	//SongsWithTagsTheyveListenedTo(username)
 	SongsTheirFolloweesListenTo(username)
-		.then(function(music) { 
+		.then(function(musicmap) { 
+		
 			var recommendations = [];
 			
-			for (var key in music) {
+			for (var key in musicmap) {
 				recommendations.push(key);
 			}
 				
@@ -35,22 +99,23 @@ exports.Get = function(username) {
 }
 
 function SongsTheirFolloweesListenTo(username) {
+
 	var deferred = q.defer();
 	
 	GetUser(username)
 		.then(GetUsersFollowees)
 		.then(GetFolloweesMusic)
 		.then(function(fm) { deferred.resolve(fm); });
-		
+
 	function GetUser(name) { 
-		return UserFactory.Make(name);	
+		return UserService.Get(name);	
 	}
 		
 	function GetUsersFollowees(user) {
 		var followsNameList = user.follows;
 		
 		var userPromises = followsNameList.map(function(name) {
-			return UserFactory.Make(name);
+			return UserService.Get(name);
 		});
 		
 		return q.all(userPromises);
@@ -87,87 +152,85 @@ function SongsTheirFolloweesListenTo(username) {
 	return deferred.promise;
 };
 
-exports.SongsWithTagsTheyveListenedTo = function(user) {
+function SongsWithTagsTheyveListenedTo(username) {
 	var deferred = q.defer();
+	var user = UserService.Get(username);
 	
-	var UserPromise = UserFactory.Make(username);
-
-	var usersSongsListenedTo = UserPromise.then(
-		function(user) {
-			return user.listenedTo;
-		});
-		
-	var getTagOccuranceMap = function(songnames) {
-		return MusicService.GetBySongNames(songnames).then(
-			function(songs) {
-				var tagOccuranceMap = {};
-				
-				var songslen = songs.length;
-				
-				for (var i=0; i<songslen; i++) {
-					var songtags = songs[i].Tags;
-					
-					var tagsLen = songtags.length;
-					
-					for(var n=0; n<tagsLen; n++) {
-						var songtag = songtags[n];
-						var songTagMapping = tagOccuranceMap[songtag];
-						if (songTagMapping == undefined) {
-							songTagMapping = 0;
-						} 
-						songTagMapping++;
-					}
+	user
+		.then(getUsersListenedTo)
+		.then(MusicService.GetBySongNames)
+		.then(getTags)
+		.then(MusicService.GetUniqueByTags)	
+		.then(function success(songs) {
+				var uniformSongMap = {};
+			
+				var songsLen = songs.length;
+				for (var i=0; i<songsLen; i++) {
+					if (uniformSongMap[songs[i].Song] == undefined) {
+						uniformSongMap[songs[i].Song] = 1;
+					} 
 				}
-				
-				return tagOccuranceMap;
+				deferred.resolve(uniformSongMap);
 			});
+
+	function getUsersListenedTo(u) {
+		var deferred = q.defer();
+		deferred.resolve(u.listenedTo);
+		return deferred.promise;
 	};
 	
-	var getSongMapBasedOnTags = function(tagOccurnaceMap) {
-		var songMap = {};
+	function getTags(songs) {
+		var deferred = q.defer();
+		var songTags = [];
 		
+		var songsLen = songs.length;
+		for (var i=0; i<songsLen; i++) {
+			var tags = songs[i].Tags;
+			
+			var tagsLen = tags.length;
+			for (var n=0; n<tagsLen; n++) {
+				if (songTags.indexOf(tags[n]) == -1) {
+					songTags.push(tags[n]);
+				}
+			}
+		}
+		deferred.resolve(songTags);	
+		return deferred.promise;
 	}
-};
-
-
-exports.SongsSimilarilyTagged = function(user) {
 	
-	ListenService.Get(user)
-		.then(
-			function success(listens) {
+	return deferred.promise;
+}
+
+
+
+
+
+
+/*
+	function getTagOccuranceMap(songs) {
+		var deferred = q.defer();
+		var tagOccuranceMap = {};
+		
+		var songsLen = songs.length;
+		for (var i=0; i<songsLen; i++) {
+			var tags = songs[i].Tags;
+			
+			var tagsLen = tags.length;
+			for (var n=0; n<tagsLen; n++) {
+				var tagMapping = tagOccuranceMap[tags[n]];
 				
+				if (tagMapping != undefined) {
+					tagMapping++;
+				} else {
+					tagOccuranceMap[tags[n]] = 1;
+				}
 			}
-		)
-}
-
-
-exports.MakeRecommendationEngine = function() {
-	return new RecommendationEngine();
+		}
+		deferred.resolve(tagOccuranceMap);	
+		return deferred.promise;
+	}
+			
+	return deferred.promise;
 };
-
-function Rule() {
-	this.Name = null;
-	this.Description = null;
-	this.Execute = function() {
-	};
-}
-
-function RecommendationEngine() {
-	
-	this.Make = function(user, rules) {
-		q.all(
-			rules.map(function(r) {
-				return r.Execute();
-			})
-		).then(
-			function success(d) {
-				//Do scoring here
-			}
-		)
-	};
-}
-
-//What songs They've listened to? -> Songs have tags -> Songs that have the same tags
-
-//Who they are following -> Songs their followees are listening too -> songs && (Songs with same tags that they are listening to)
+*/
 
