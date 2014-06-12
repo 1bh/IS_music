@@ -134,8 +134,8 @@ function SongsTheirFolloweesListenTo(user) {
 	GetUsersFollowees(user)
 		.then(GetFolloweesMusic)
 		.then(function(songs) { return songs.filter(function(s) { return ignoreList.indexOf(s) == -1 }); })
-		.then(MakeSongMap)
-		.then(function(songmap) { deferred.resolve(songmap); });
+		.then(MakeScoreSheet)
+		.then(function(scoreSheet) { deferred.resolve(scoreSheet); });
 	
 	
 	function GetUsersFollowees(user) {
@@ -171,7 +171,7 @@ function SongsTheirFolloweesListenTo(user) {
 		return deferred.promise;
 	}
 	
-	function MakeSongMap(songs) {
+	function MakeScoreSheet(songs) {
 		var songMap = {};
 		
 		var songsLen = songs.length;
@@ -207,8 +207,8 @@ function SongsWithTagsTheyveListenedTo(user) {
 		.then(MusicService.GetUniqueByTags)	
 		.then(function(Music) { return Music.map(function(m) { return m.Song; }) })
 		.then(function(songs) { return songs.filter(function(s) { return ignoreList.indexOf(s) == -1 }); })
-		.then(MakeSongMap)
-		.then(function(songmap) { deferred.resolve(songmap); });
+		.then(MakeScoreSheet)
+		.then(function(scoreSheet) { deferred.resolve(scoreSheet); });
 
 	function GetUsersListenedTo(u) {
 		var deferred = q.defer();
@@ -235,7 +235,7 @@ function SongsWithTagsTheyveListenedTo(user) {
 		return deferred.promise;
 	}
 	
-	function MakeSongMap(songs) {
+	function MakeScoreSheet(songs) {
 		var songMap = {};
 		
 		var songsLen = songs.length;
