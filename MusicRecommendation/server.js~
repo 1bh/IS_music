@@ -19,8 +19,6 @@ MusicImportService.importJSONMapFile(MUSICPATH).then(
 //Express based HTTP server
 //Main middleware pipeline
 
-
-
 var app = express();
 
 app.use(bodyparser());

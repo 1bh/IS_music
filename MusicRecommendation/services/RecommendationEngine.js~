@@ -12,12 +12,17 @@ exports.GetEngine = function(username) {
 	return new Engine(username);
 };
 
+//Engine which should eventually be a bit configurable
+//IE. Choose which recommendation axioms we would like to use, recommendation size, scoring options for those axioms
+//The axioms like "SongsWithTagsTheyveListenedTo, may become more like configurable objects with an a run method
 function Engine(forUsername) {
 
 	var User = UserService.Get(forUsername);
 
 	var recommendationLimit = 5;
 
+
+	//Gets songScoreSheets for each method run, and then aggregates them into a score board, and recommends based on that
 	this.getRecommendation = function() {
 	
 		return User
@@ -25,13 +30,15 @@ function Engine(forUsername) {
 				function(user) {
 					return q.all([SongsWithTagsTheyveListenedTo(user), SongsTheirFolloweesListenTo(user)])
 							.then( MakeScoreBoard )
-							.then( MakeRecommendationsBasedOnScore )		
+							.then( function(scoreboard) {
+								return MakeRecommendations(scoreboard, user);
+							});		
 				
 				});	
 	};
 	
-	function MakeRecommendationsBasedOnScore(scoreBoard) {
-		//Build the recommendation list based on the score buckets
+	function MakeRecommendations(scoreBoard, user) {
+
 		var deferred = q.defer();
 
 		var recommendations = [];
@@ -43,12 +50,12 @@ function Engine(forUsername) {
 			}
 		}
 
-		while (recommendations.length != 5 && highestScore > 0) {
+		while (recommendations.length != recommendationLimit && highestScore > 0) {
 
 			var songs = scoreBoard[highestScore];
 
 			if (songs.length > 0) {
-				var recommendationsRemaining = 5 - recommendations.length;
+				var recommendationsRemaining = recommendationLimit - recommendations.length;
 				var r = songs.slice(0, recommendationsRemaining);
 				
 				recommendations = recommendations.concat(r);
@@ -56,8 +63,23 @@ function Engine(forUsername) {
 			highestScore = highestScore - 1;
 		}
 
-		deferred.resolve(recommendations);
-
+		if (recommendations.length  < 5) {
+			//Recommendation requires bonus round
+			//No time but I might have done something like, look at tags of what recommendations were made,
+			//Or have some sort of tool to see what other music was recommended to users if m2 was part
+			//of the recommendations, so I will handle worst case only where nothing can be related to user
+			MusicService.Read().then(function(music) {
+				return music
+					.filter(function(m) { return recommendations.indexOf(m) == -1; })
+					.map(function(s) { return s.Song; });
+			}).then(function(filteredMusic) {
+				var r = filteredMusic.slice(0, recommendationLimit - recommendations.length);
+				recommendations = recommendations.concat(r);
+				deferred.resolve(recommendations);
+			})
+		} else {
+			deferred.resolve(recommendations);
+		}
 		return deferred.promise;
 	}
 }
@@ -106,11 +128,14 @@ function MakeScoreBoard(songScoreSheets) {
 	return deferred.promise;
 }
 
+//Return all songs that the users followees listen to
 function SongsTheirFolloweesListenTo(user) {
+	var ignoreList = user.listenedTo;
 	var deferred = q.defer();
 	
 	GetUsersFollowees(user)
 		.then(GetFolloweesMusic)
+		.then(function(songs) { return songs.filter(function(s) { return ignoreList.indexOf(s) == -1 }); })
 		.then(MakeSongMap)
 		.then(function(songmap) { deferred.resolve(songmap); });
 	
@@ -171,13 +196,19 @@ function SongsTheirFolloweesListenTo(user) {
 	return deferred.promise;
 };
 
+//Return all songs that have the same tags as music theyve already listened to
+//Would be nice to provide weighing schemas for this method, as described earlier 
+//With configurable rules. ie. if song matches more than one tag, score it higher
 function SongsWithTagsTheyveListenedTo(user) {
+	var ignoreList = user.listenedTo;
 	var deferred = q.defer();
 	
 	GetUsersListenedTo(user)
 		.then(MusicService.GetBySongNames)
 		.then(GetTags)
 		.then(MusicService.GetUniqueByTags)	
+		.then(function(Music) { return Music.map(function(m) { return m.Song; }) })
+		.then(function(songs) { return songs.filter(function(s) { return ignoreList.indexOf(s) == -1 }); })
 		.then(MakeSongMap)
 		.then(function(songmap) { deferred.resolve(songmap); });
 
@@ -207,21 +238,24 @@ function SongsWithTagsTheyveListenedTo(user) {
 	}
 	
 	function MakeSongMap(songs) {
-		var deferred = q.defer();
+		var songMap = {};
 		
-		var uniformSongMap = {};
-			
 		var songsLen = songs.length;
-		for (var i=0; i<songsLen; i++) {
-			if (uniformSongMap[songs[i].Song] == undefined) {
-				uniformSongMap[songs[i].Song] = 1;
-			} 
+		
+		for (var n=0; n<songsLen; n++) {
+
+			var songMapping = songMap[songs[n]];
+			if (songMapping != undefined) {
+				songMapping++;
+			} else {
+				songMap[songs[n]] = 1;
+			}
 		}
 
-		deferred.resolve(uniformSongMap);
+		deferred.resolve(songMap);
 		
 		return deferred.promise;
-	}
+		}
 	
 	return deferred.promise;
 }
