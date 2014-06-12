@@ -1,0 +1,53 @@
+---------------------------------------------------------------------
+How long did this assignment take?
+---------------------------------------------------------------------
+20~25 hours on and off on the project
++
+5 hours approximately wrestling with environment troubles to work on this.
+I had a node setup, but I originally wanted to try KoaJS. I noticed however that
+my node js version was not high enough, so I tried to upgrade my node js using
+"n", but something went horribly wrong =]
+
+
+
+
+---------------------------------------------------------------------
+Where would be the bottlenecks of this solution you have implemented?
+---------------------------------------------------------------------
+One bottleneck would probably be processing too much data. Methods like SongsTheirFolloweesListenTo are very general, and in the worst case
+we could be looking at all songs. Same goes for SongsWithTagsTheyveListenedTo, but the hope is to alleviate that with configurable scoring options and cutoffs.
+So unfortunately we could end up with huge score sheets.
+
+
+
+
+---------------------------------------------------------------------
+What was the hardest part?
+---------------------------------------------------------------------
+The most interesting part for me was in general developing a large NodeJS / JavaScript server side application in comparison to something more similar to say .NET C#. 
+There are a lot of interesting things you can do in JavaScript that cannot be found in a more type safe language like C# :), and different considerations with a more
+async first development pattern.
+
+
+
+
+---------------------------------------------------------------------
+Did you learn something new?
+---------------------------------------------------------------------
+I definitely learned a lot about NodeJS. I had used node js with express before to provide little toy apis,
+but the code I wrote was always super trivial and always contained within one source file of no more than 50 lines of code.
+
+I would not be so sure to know if I learned what I should have learned but I feel I gathered a bunch of questions and tried
+to set myself in the direction to find their answers. This included a lot about large scale node js project architecture, 
+server side javascript considerations, and considerations about node js' asynchronous nature.
+
+I also learned about a lot more node modules, including better understanding of express, learning some of mocha, supertest, and
+a few others.
+
+
+
+
+---------------------------------------------------------------------
+Do you feel your skills were under tested?
+---------------------------------------------------------------------
+I feel it was a good test of my skills.
