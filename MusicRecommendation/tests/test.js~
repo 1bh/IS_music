@@ -10,6 +10,43 @@ var STATICJSONDIR = '../initialgist/gist5042053a95b8bc5e0cb9-2780cd52ab0a6b5122c
 var LISTENJSON = '/listen.json';
 var FOLLOWJSON = '/follows.json';
 
+describe('TestScript', function() {
+	it("should see all responses succeed", function(done) {
+
+		var postToFollowAPI =
+			readJSONFile( STATICJSONDIR + FOLLOWJSON )
+				.then( formatFollowJSONForAPI )
+				.then( function (data) {
+					var postPromises = data.map(function(d) { 
+						doPost('follow', d);
+					});
+					return q.all(postPromises);
+				});
+				
+		var postToListenAPI = 
+			readJSONFile( STATICJSONDIR + LISTENJSON )
+				.then( formatListenJSONForAPI )
+				.then( function (data) {
+					var postPromises = data.map(function(d) { 
+						doPost('listen', d);
+					});
+					return q.all(postPromises);
+				});
+				
+		q.all([postToFollowAPI, postToListenAPI])
+			.then(function(success) {
+			
+				request('http://127.0.0.1:9001')
+					.get('/' + 'recommendations' + '?user=a')
+					.end(function(err, res) {
+						console.log("For user a, we recommend: ", res.body);
+						done();
+					});	
+			});
+		
+	});
+});
+
 
 function readJSONFile(path) {
 	var deferred = q.defer();
@@ -65,70 +102,4 @@ function doPost(resourceName, model) {
 
 	return deferred.promise;
 }
-
-describe('PostToFollowAPI', function() {
-	it("should see all responses succeed", function(done) {
-
-		function postAllFollows(follows) {
-		
-			function followPostPromise(follow) {
-				var deferred = q.defer();
-			
-				request('http://127.0.0.1:9001')
-					.post('/follow')
-					.send(follow)
-					.end(function(err, res) {
-					deferred.resolve();
-				});
-			
-				return deferred.promise;
-			}
-		
-			var followPostPromises = follows.map(function(f) {
-				return followPostPromise(f);
-			});
-			
-			return q.all(followPostPromises);
-		};
-		
-		
-		readJSONFile( STATICJSONDIR + FOLLOWJSON )
-			.then( formatFollowJSONForAPI )
-			.then( postAllFollows )
-			.then( function success(d) { done(); } );
-	});
-});
-
-describe('PostToListenAPI', function() {
-	it("should see all responses succeed", function(done) {
-			
-		function postAllListens(follows) {
-		
-			function listenPostPromise(follow) {
-				var deferred = q.defer();
-			
-				request('http://127.0.0.1:9001')
-					.post('/listen')
-					.send(follow)
-					.end(function(err, res) {
-					deferred.resolve();
-				});
-			
-				return deferred.promise;
-			}
-		
-			var listenPostPromises = follows.map(function(f) {
-				return listenPostPromise(f);
-			});
-			
-			return q.all(listenPostPromises);
-		};
-		
-		
-		readJSONFile( STATICJSONDIR + LISTENJSON )
-			.then( formatListenJSONForAPI )
-			.then( postAllListens )
-			.then( function success(d) { done(); } );
-	});
-});
 
