@@ -6,11 +6,11 @@ var fs = require('fs');
 
 
 //File paths
-var STATICJSONDIR = '../../../initialgist/gist5042053a95b8bc5e0cb9-2780cd52ab0a6b5122c6350a92254729011b20ce';
+var STATICJSONDIR = '../initialgist/gist5042053a95b8bc5e0cb9-2780cd52ab0a6b5122c6350a92254729011b20ce';
 var LISTENJSON = '/listen.json';
 var FOLLOWJSON = '/follows.json';
 
-//Groom the lists for consumption in the API's
+
 function readJSONFile(path) {
 	var deferred = q.defer();
 	
@@ -22,6 +22,7 @@ function readJSONFile(path) {
 	return deferred.promise;
 }
 
+//Groom the json data for consumption in the API's
 function formatFollowJSONForAPI(object) {
 	var deferred = q.defer();
 	
@@ -68,9 +69,9 @@ function doPost(resourceName, model) {
 describe('PostToFollowAPI', function() {
 	it("should see all responses succeed", function(done) {
 
-		var postAllFollows = function(follows) {
+		function postAllFollows(follows) {
 		
-			var followPostPromise = function(follow) {
+			function followPostPromise(follow) {
 				var deferred = q.defer();
 			
 				request('http://127.0.0.1:9001')
@@ -101,9 +102,9 @@ describe('PostToFollowAPI', function() {
 describe('PostToListenAPI', function() {
 	it("should see all responses succeed", function(done) {
 			
-		var postAllFollows = function(follows) {
+		function postAllListens(follows) {
 		
-			var followPostPromise = function(follow) {
+			function listenPostPromise(follow) {
 				var deferred = q.defer();
 			
 				request('http://127.0.0.1:9001')
@@ -116,17 +117,17 @@ describe('PostToListenAPI', function() {
 				return deferred.promise;
 			}
 		
-			var followPostPromises = follows.map(function(f) {
-				return followPostPromise(f);
+			var listenPostPromises = follows.map(function(f) {
+				return listenPostPromise(f);
 			});
 			
-			return q.all(followPostPromises);
+			return q.all(listenPostPromises);
 		};
 		
 		
 		readJSONFile( STATICJSONDIR + LISTENJSON )
 			.then( formatListenJSONForAPI )
-			.then( postAllFollows )
+			.then( postAllListens )
 			.then( function success(d) { done(); } );
 	});
 });
