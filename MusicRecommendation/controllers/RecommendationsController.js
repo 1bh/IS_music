@@ -6,8 +6,8 @@ module.exports.set = function(app, q) {
 		
 		recommendationService.Get(request.query.user)
 			.then(
-				function success(d) { response.json(d); },
-				function failure(d) { response.send("failure"); }
+				function success(d) { response.statusCode = 200; response.json(d); },
+				function failure(d) { response.statusCode = 500; response.send("failure"); }
 			)
 	});
 }

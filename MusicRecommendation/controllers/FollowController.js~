@@ -15,8 +15,8 @@ module.exports.set = function(app, q) {
 		
 		followService.Create(follow)
 			.then(
-				function success(d) { response.send(d); },
-				function failure(d) { response.send("Failure"); }
+				function success(d) {  response.statusCode = 201; response.send(d); },
+				function failure(d) {  response.statusCode = 500; response.send("Failure"); }
 			);
     	
     	

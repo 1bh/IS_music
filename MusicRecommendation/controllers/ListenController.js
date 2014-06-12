@@ -14,8 +14,8 @@ module.exports.set = function(app, q) {
 		
 		listenService.Create(listen)
 			.then(
-				function success(d) { response.json(d); },
-				function failure(d) { response.send("failure"); }
+				function success(d) { response.statusCode = 201; response.json(d); },
+				function failure(d) {  response.statusCode = 500; response.send("failure"); }
 			);
 	});
 }
