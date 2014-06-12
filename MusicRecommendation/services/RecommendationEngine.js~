@@ -3,15 +3,33 @@ var q = require('q');
 var UserService = require('../services/UserService');
 var MusicService = require('../services/MusicService');
 
-function Engine() {
+function Engine(forUsername) {
 /*
-	var 
-	return */
+	this.FunctionsAvailable = [
+		{ 
+			functionPointer: SongsWithTagsTheyveListenedTo, 
+			weight: 1,
+		},
+		{ 
+			functionPointer: SongsTheirFolloweesListenTo, 
+			weight: 1,
+		}
+	] 
+		
+	this.FunctionsToUse = [];
+	
+	
+	
+	return {
+		MakeRecommendations : function() {
+		};
+	} 
+	*/
 };
 
 
 exports.MakeEngine = function(username) {
-
+	return new Engine(username);
 };
 
 exports.Get2 = function(username) {

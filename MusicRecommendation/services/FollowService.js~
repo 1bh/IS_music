@@ -27,7 +27,7 @@ exports.Get = function() {
 		deferred.reject();
 	}
 	
-	return deferred.promise();
+	return deferred.promise;
 }
 
 exports.GetFollowees = function(user) {
@@ -40,8 +40,6 @@ exports.GetFollowees = function(user) {
 		});
 		
 	deferred.resolve(followees);
-
-	//deferred.reject();
 
 	return deferred.promise;
 }

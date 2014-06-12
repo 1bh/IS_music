@@ -41,8 +41,6 @@ exports.GetFollowees = function(user) {
 		
 	deferred.resolve(followees);
 
-	//deferred.reject();
-
 	return deferred.promise;
 }
 
