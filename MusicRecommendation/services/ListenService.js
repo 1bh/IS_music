@@ -9,7 +9,7 @@ exports.Create = function(listen) {
 		
 		deferred.resolve(l);
 	} catch (err) {
-		deferred.reject("bad");
+		deferred.reject();
 	}
 	
 	return deferred.promise;

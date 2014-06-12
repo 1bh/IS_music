@@ -41,7 +41,7 @@ exports.Read = function() {
 		var songs = SongDataProvider.Get();
 		deferred.resolve(songs);
 	} catch (err) {
-		deferred.reject("bad");
+		deferred.reject();
 	}
 	
 	return deferred.promise;
@@ -55,7 +55,7 @@ exports.Add = function(song) {
 		SongDataProvider.Insert(song);
 		deferred.resolve(song);
 	} catch (err) {
-		deferred.reject("bad");
+		deferred.reject();
 	}
 	
 	return deferred.promise;

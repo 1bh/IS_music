@@ -23,7 +23,7 @@ exports.GetByUser = function(username) {
 		listens = listens.filter(function(l) {
 			return l.user == username;
 		});
-		console.log(listens);
+
 		deferred.resolve(listens);
 	} catch (err) {
 		deferred.reject();

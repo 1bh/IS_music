@@ -5,8 +5,8 @@ var MusicService = require('../services/MusicService');
 
 /*
 A songScoreSheet is an object that has songs as keys, and a score (int) as a value
-The idea is to be able to create functions that return these song score sheets, and then just aggregate them in a central area
-
+The idea is to be able to create functions that return these song score sheets, and
+process these score sheets at a higher level
 */
 exports.GetEngine = function(username) {
 	return new Engine(username);
@@ -14,7 +14,7 @@ exports.GetEngine = function(username) {
 
 //Engine which should eventually be a bit configurable
 //IE. Choose which recommendation axioms we would like to use, recommendation size, scoring options for those axioms
-//The axioms like "SongsWithTagsTheyveListenedTo, may become more like configurable objects with an a run method
+//The axioms like "SongsWithTagsTheyveListenedTo, may become more like configurable objects with a run method
 function Engine(forUsername) {
 
 	var User = UserService.Get(forUsername);
@@ -22,7 +22,7 @@ function Engine(forUsername) {
 	var recommendationLimit = 5;
 
 
-	//Gets songScoreSheets for each method run, and then aggregates them into a score board, and recommends based on that
+	//Gets songScoreSheets for each method run, and then aggregate them into a score board, and recommend based on that
 	this.getRecommendation = function() {
 	
 		return User
@@ -30,14 +30,12 @@ function Engine(forUsername) {
 				function(user) {
 					return q.all([SongsWithTagsTheyveListenedTo(user), SongsTheirFolloweesListenTo(user)])
 							.then( MakeScoreBoard )
-							.then( function(scoreboard) {
-								return MakeRecommendations(scoreboard, user);
-							});		
+							.then( MakeRecommendations );		
 				
 				});	
 	};
 	
-	function MakeRecommendations(scoreBoard, user) {
+	function MakeRecommendations(scoreBoard) {
 
 		var deferred = q.defer();
 
@@ -67,7 +65,7 @@ function Engine(forUsername) {
 			//Recommendation requires bonus round
 			//No time but I might have done something like, look at tags of what recommendations were made,
 			//Or have some sort of tool to see what other music was recommended to users if m2 was part
-			//of the recommendations, so I will handle worst case only where nothing can be related to user
+			//of their recommendations, so I will handle worst case only where nothing can be related to user
 			MusicService.Read().then(function(music) {
 				return music
 					.filter(function(m) { return recommendations.indexOf(m) == -1; })
