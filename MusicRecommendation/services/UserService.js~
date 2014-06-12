@@ -27,10 +27,11 @@ exports.Get = function(username) {
 	return deferred.promise;
 }
 
-//MORE LIKE A USER SONG PROFILER BUSINESS OBJECT
+//Would be maybe nice to have another abstraction that is more of a user geared towards recommendation making purposes
+//ie
 //ACCESS TO: 
 //USER
 //FOLLOWS
 //LISTENEDTO
 //TAGFREQUENCYMAP
-//
+//any other future properties that arent necessarily modeled by incoming resources

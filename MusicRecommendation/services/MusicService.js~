@@ -107,7 +107,7 @@ exports.GetUniqueByTags = function(TagList) {
 		var songs = SongDataProvider.GetByTag(TagList[i]);
 		
 		for (var n=0; n<songs.length; n++) {
-			if (songList.filter(function(s) { return s.Song == songs[n].Song }).length = 0) {
+			if (songList.filter(function(s) { return s.Song == songs[n].Song }).length == 0) {
 				songList.push(songs[n]);
 			}
 		}

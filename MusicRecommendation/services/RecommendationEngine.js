@@ -3,132 +3,118 @@ var q = require('q');
 var UserService = require('../services/UserService');
 var MusicService = require('../services/MusicService');
 
-function Engine(forUsername) {
 /*
-	this.FunctionsAvailable = [
-		{ 
-			functionPointer: SongsWithTagsTheyveListenedTo, 
-			weight: 1,
-		},
-		{ 
-			functionPointer: SongsTheirFolloweesListenTo, 
-			weight: 1,
-		}
-	] 
-		
-	this.FunctionsToUse = [];
-	
-	
-	
-	return {
-		MakeRecommendations : function() {
-		};
-	} 
-	*/
-};
+A songScoreSheet is an object that has songs as keys, and a score (int) as a value
+The idea is to be able to create functions that return these song score sheets, and then just aggregate them in a central area
 
-
-exports.MakeEngine = function(username) {
+*/
+exports.GetEngine = function(username) {
 	return new Engine(username);
 };
 
-exports.Get2 = function(username) {
-	var deferred = q.defer();
+function Engine(forUsername) {
+
+	var User = UserService.Get(forUsername);
+
+	var recommendationLimit = 5;
+
+	this.getRecommendation = function() {
 	
-	q.all(
-		[
-			SongsWithTagsTheyveListenedTo(username),
-			SongsTheirFolloweesListenTo(username)
-		]
-	).then(function success(songScoreSheets) {
-		console.log(songScoreSheets);
-
-		var masterScoreSheet = {};
-		
-		var sheetsLength = songScoreSheets.length;
-		
-		for (var i=0; i<sheetsLength; i++) {
-		
-			var scoreSheet = songScoreSheets[i];
-
-			for (var key in scoreSheet) {
-
-				if (masterScoreSheet[key] == undefined) {
-					masterScoreSheet[key] = scoreSheet[key];
-				} else {
-					masterScoreSheet[key] = masterScoreSheet[key] + scoreSheet[key];
-				}
-			}
-		}
-
-		var finalScoreBuckets = {};
-		var highestScore = 0;
-		for (var key in masterScoreSheet) {
-			var songScore = masterScoreSheet[key];
-			if (songScore > highestScore) {
-				highestScore = songScore;
-			}
-			if (finalScoreBuckets[songScore] == undefined) {
-				finalScoreBuckets[songScore] = [key];
-			} else {
-				finalScoreBuckets[songScore].push(key);
-			}
-		}
+		return User
+			.then(
+				function(user) {
+					return q.all([SongsWithTagsTheyveListenedTo(user), SongsTheirFolloweesListenTo(user)])
+							.then( MakeScoreBoard )
+							.then( MakeRecommendationsBasedOnScore )		
+				
+				});	
+	};
+	
+	function MakeRecommendationsBasedOnScore(scoreBoard) {
+		//Build the recommendation list based on the score buckets
+		var deferred = q.defer();
 
 		var recommendations = [];
-		var n = highestScore;
+		
+		var highestScore = 0;
+		for (var key in scoreBoard) {
+			if (key > highestScore) {
+				highestScore = key;
+			}
+		}
 
-		while (recommendations.length != 5 && n > 0) {
-			
-			var songs = finalScoreBuckets[n];
-			console.log("songs: ", songs);
+		while (recommendations.length != recommendationLimit && highestScore > 0) {
+
+			var songs = scoreBoard[highestScore];
+
 			if (songs.length > 0) {
-				var recommendationsRemaining = 5 - recommendations.length;
+				var recommendationsRemaining = recommendationLimit - recommendations.length;
 				var r = songs.slice(0, recommendationsRemaining);
+				
 				recommendations = recommendations.concat(r);
 			}
-			n = n - 1;
+			highestScore = highestScore - 1;
 		}
+
 		deferred.resolve(recommendations);
 
-		
-	});
-
-	return deferred.promise;
+		return deferred.promise;
+	}
 }
 
-exports.Get = function(username) {
+//Returns a map where scores point to lists of music that scored that score
+function MakeScoreBoard(songScoreSheets) {
 	var deferred = q.defer();
 
-	//SongsWithTagsTheyveListenedTo(username)
-	SongsTheirFolloweesListenTo(username)
-		.then(function(musicmap) { 
-		
-			var recommendations = [];
-			
-			for (var key in musicmap) {
-				recommendations.push(key);
+	//Add up scores from all score sheets
+	var masterScoreSheet = {};
+	
+	var sheetsLength = songScoreSheets.length;
+	
+	for (var i=0; i<sheetsLength; i++) {
+	
+		var scoreSheet = songScoreSheets[i];
+
+		for (var key in scoreSheet) {
+
+			if (masterScoreSheet[key] == undefined) {
+				masterScoreSheet[key] = scoreSheet[key];
+			} else {
+				masterScoreSheet[key] = masterScoreSheet[key] + scoreSheet[key];
 			}
-				
-			deferred.resolve({ list : recommendations }); 
-		});
-		
+		}
+	}
+
+	//Arrange the scores as buckets, and have them pointing to lists of the music that have those scores
+	var finalScoreBuckets = {};
+	var highestScore = 0;
+	
+	for (var key in masterScoreSheet) {
+		var songScore = masterScoreSheet[key];
+		if (songScore > highestScore) {
+			highestScore = songScore;
+		}
+		if (finalScoreBuckets[songScore] == undefined) {
+			finalScoreBuckets[songScore] = [key];
+		} else {
+			finalScoreBuckets[songScore].push(key);
+		}
+	}
+
+	deferred.resolve(finalScoreBuckets);
+
 	return deferred.promise;
 }
 
-function SongsTheirFolloweesListenTo(username) {
-
+function SongsTheirFolloweesListenTo(user) {
 	var deferred = q.defer();
 	
-	GetUser(username)
-		.then(GetUsersFollowees)
+	GetUsersFollowees(user)
 		.then(GetFolloweesMusic)
-		.then(function(fm) { deferred.resolve(fm); });
-
-	function GetUser(name) { 
-		return UserService.Get(name);	
-	}
-		
+		.then(MakeSongMap)
+		.then(function(songmap) { deferred.resolve(songmap); });
+	
+	
 	function GetUsersFollowees(user) {
 		var followsNameList = user.follows;
 		
@@ -141,24 +127,39 @@ function SongsTheirFolloweesListenTo(username) {
 	
 	function GetFolloweesMusic(users) {
 		var deferred = q.defer();
-		var songMap = {};
+		
+		var songs = [];
 		
 		var followeeLen = users.length;
-	
+		
 		for (var i=0; i<followeeLen; i++) { 
 			var user = users[i];
 			
-			var listens = user.listenedTo;		
+			var listens = user.listenedTo;
 			var listensLen = listens.length;
 			
 			for (var n=0; n<listensLen; n++) {
+				songs.push(listens[n]);
+			}
+		}
 
-				var songMapping = songMap[listens[n]];
-				if (songMapping != undefined) {
-					songMapping++;
-				} else {
-					songMap[listens[n]] = 1;
-				}
+		deferred.resolve(songs);
+		
+		return deferred.promise;
+	}
+	
+	function MakeSongMap(songs) {
+		var songMap = {};
+		
+		var songsLen = songs.length;
+		
+		for (var n=0; n<songsLen; n++) {
+
+			var songMapping = songMap[songs[n]];
+			if (songMapping != undefined) {
+				songMapping++;
+			} else {
+				songMap[songs[n]] = 1;
 			}
 		}
 
@@ -170,34 +171,23 @@ function SongsTheirFolloweesListenTo(username) {
 	return deferred.promise;
 };
 
-function SongsWithTagsTheyveListenedTo(username) {
+function SongsWithTagsTheyveListenedTo(user) {
 	var deferred = q.defer();
-	var user = UserService.Get(username);
 	
-	user
-		.then(getUsersListenedTo)
+	GetUsersListenedTo(user)
 		.then(MusicService.GetBySongNames)
-		.then(getTags)
+		.then(GetTags)
 		.then(MusicService.GetUniqueByTags)	
-		.then(function success(songs) {
-				var uniformSongMap = {};
-			
-				var songsLen = songs.length;
-				for (var i=0; i<songsLen; i++) {
-					if (uniformSongMap[songs[i].Song] == undefined) {
-						uniformSongMap[songs[i].Song] = 1;
-					} 
-				}
-				deferred.resolve(uniformSongMap);
-			});
+		.then(MakeSongMap)
+		.then(function(songmap) { deferred.resolve(songmap); });
 
-	function getUsersListenedTo(u) {
+	function GetUsersListenedTo(u) {
 		var deferred = q.defer();
 		deferred.resolve(u.listenedTo);
 		return deferred.promise;
 	};
 	
-	function getTags(songs) {
+	function GetTags(songs) {
 		var deferred = q.defer();
 		var songTags = [];
 		
@@ -216,39 +206,24 @@ function SongsWithTagsTheyveListenedTo(username) {
 		return deferred.promise;
 	}
 	
+	function MakeSongMap(songs) {
+		var deferred = q.defer();
+		
+		var uniformSongMap = {};
+			
+		var songsLen = songs.length;
+		for (var i=0; i<songsLen; i++) {
+			if (uniformSongMap[songs[i].Song] == undefined) {
+				uniformSongMap[songs[i].Song] = 1;
+			} 
+		}
+
+		deferred.resolve(uniformSongMap);
+		
+		return deferred.promise;
+	}
+	
 	return deferred.promise;
 }
 
-
-
-
-
-
-/*
-	function getTagOccuranceMap(songs) {
-		var deferred = q.defer();
-		var tagOccuranceMap = {};
-		
-		var songsLen = songs.length;
-		for (var i=0; i<songsLen; i++) {
-			var tags = songs[i].Tags;
-			
-			var tagsLen = tags.length;
-			for (var n=0; n<tagsLen; n++) {
-				var tagMapping = tagOccuranceMap[tags[n]];
-				
-				if (tagMapping != undefined) {
-					tagMapping++;
-				} else {
-					tagOccuranceMap[tags[n]] = 1;
-				}
-			}
-		}
-		deferred.resolve(tagOccuranceMap);	
-		return deferred.promise;
-	}
-			
-	return deferred.promise;
-};
-*/
 

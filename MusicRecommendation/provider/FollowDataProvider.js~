@@ -11,6 +11,6 @@ exports.Insert = function(follow) {
 	follow.id = id;
 	
 	Follows.push(follow);
-	console.log(Follows);
+
 	return follow;
 };

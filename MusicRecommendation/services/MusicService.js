@@ -101,7 +101,6 @@ exports.GetUniqueByTags = function(TagList) {
 	var deferred = q.defer();
 
 	var songList = [];
-	console.log(TagList);
 	
 	for (var i=0; i<TagList.length; i++) {
 		var songs = SongDataProvider.GetByTag(TagList[i]);
